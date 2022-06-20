@@ -4,12 +4,16 @@ const path = require('path')
 const methodOverride = require('method-override')
 const ejsMate = require('ejs-mate')
 const session = require('express-session')
-const catchAsync = require('./utils/CatchAsync')
-const ExpressError = require('./utils/ExpressError')
+/* const catchAsync = require('./utils/CatchAsync')
 const Joi = require('joi')
-const flash = require('connect-flash')
 const {campgroundSchema, reviewSchema} = require('./schemas.js')
-const Review = require('./models/review')
+const Review = require('./models/review') */
+const ExpressError = require('./utils/ExpressError')
+const flash = require('connect-flash')
+const passport = require('passport')
+const LocalStrategy = require('passport-local')
+const User = require('./models/user')
+
 const mongoose = require('mongoose')
 mongoose.connect('mongodb://127.0.0.1:/yelp-camp')
 .then(()=>{
@@ -20,10 +24,10 @@ const campgrounds = require('./routes/campgrounds')
 const reviews = require('./routes/reviews')
 
 const Campground = require('./models/campground')
-// const campground = require('./models/campground')
 
-app.engine('ejs', ejsMate)
+
 /* Setting View Engine for EJS */
+app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views')) 
 /* For Parsing The Json Data in Browser */
@@ -45,10 +49,23 @@ const sessionConfig = {
 app.use(session(sessionConfig))
 app.use(flash())
 
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new LocalStrategy(User.authenticate()))
+
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
+
 app.use((req, res, next) => {
     res.locals.success = req.flash('success')
     res.locals.error = req.flash('error')
     next()
+})
+
+app.get('/fakeUser', async(req, res) => {
+    const user = new User({email: 'rabeeh@gmail.com', username: 'rabeeh'})
+    const newUser= await User.register(user, 'rabeehisgreat')
+    res.send(newUser)
 })
 
 app.use('/campgrounds', campgrounds)
