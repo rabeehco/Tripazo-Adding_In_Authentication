@@ -19,7 +19,7 @@ const campgroundRoutes = require('./routes/campgrounds')
 const reviewRoutes = require('./routes/reviews')
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb://127.0.0.1:/yelp-camp')
+mongoose.connect('mongodb://127.0.0.1:/authDemo')
 .then(()=>{
     console.log('DB connected')
 })
